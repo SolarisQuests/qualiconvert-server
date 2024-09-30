@@ -2,11 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const mailgun = require('mailgun-js');
 require('dotenv').config();
 
 const app = express();
-const port = 3002;
+const port = 3001;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -22,9 +21,6 @@ const formDataSchema = new mongoose.Schema({}, { strict: false, timestamps: true
 // Create a model based on the schema, specifying the collection name
 const FormData = mongoose.model('FormData', formDataSchema, 'Qualiconvert_onboarding_submissions');
 
-// Initialize Mailgun
-const mg = mailgun({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
-
 app.post('/api/submit-form', async (req, res) => {
   try {
     const formData = req.body;
@@ -36,34 +32,7 @@ app.post('/api/submit-form', async (req, res) => {
 
     console.log('Form data saved successfully:', savedData);
 
-    // Prepare email content
-    const emailContent = Object.entries(formData)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join('\n');
-
-    // Add Terms & Conditions confirmation to the email
-    const termsLink = 'https://onboarding.qualiconvert.com/terms';
-    const termsConfirmation = `\n\nHere is the link for the terms and conditions which you have accepted for Qualiconvert. This is for your review: ${termsLink}`;
-
-    console.log('Preparing to send email to:', formData.email);
-
-    // Send email using Mailgun
-    const data = {
-      from: 'Qualiconvert <noreply@qualiconvert.com>',
-      to: formData.email,
-      subject: 'New Onboarding Form Submission',
-      text: `Thank you for submitting your onboarding form. Here are the details you provided:\n\n${emailContent}${termsConfirmation}`
-    };
-
-    mg.messages().send(data, function (error, body) {
-      if (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ message: 'Error sending email', error: error.message });
-      } else {
-        console.log('Email sent successfully. Mailgun response:', body);
-        res.status(200).json({ message: 'Form submitted successfully', savedData });
-      }
-    });
+    res.status(200).json({ message: 'Form submitted successfully', savedData });
 
   } catch (error) {
     console.error('Error in submit-form route:', error);
