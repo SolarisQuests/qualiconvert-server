@@ -21,7 +21,7 @@ const formDataSchema = new mongoose.Schema({}, { strict: false, timestamps: true
 // Create a model based on the schema, specifying the collection name
 const FormData = mongoose.model('FormData', formDataSchema, 'Qualiconvert_onboarding_submissions');
 
-app.post('/api/submit-form', async (req, res) => {
+/*app.post('/api/submit-form', async (req, res) => {
   try {
     const formData = req.body;
     console.log('Received form data:', formData);
@@ -33,6 +33,54 @@ app.post('/api/submit-form', async (req, res) => {
     console.log('Form data saved successfully:', savedData);
 
     res.status(200).json({ message: 'Form submitted successfully', savedData });
+
+  } catch (error) {
+    console.error('Error in submit-form route:', error);
+    res.status(500).json({ message: 'Error submitting form', error: error.message });
+  }
+});
+*/
+// Initialize Mailgun
+const mg = mailgun({apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN});
+
+app.post('/api/submit-form', async (req, res) => {
+  try {
+    const formData = req.body;
+    console.log('Received form data:', formData);
+
+    // Create a new document in MongoDB with all received fields
+    const newFormData = new FormData(formData);
+    const savedData = await newFormData.save();
+
+    console.log('Form data saved successfully:', savedData);
+
+    // Prepare email content
+    const emailContent = Object.entries(formData)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+
+    
+    console.log('Preparing to send email to:', formData.email);
+
+    // Send email using Mailgun
+    const data = {
+      from: 'Qualiconvert <noreply@qualiconvert.com>',
+      to: formData.email,
+      cc: 'sheldon@auxoinnovation.com', 
+      bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com', 
+      subject: 'New Onboarding Form Submission',
+      text: `Thank you for submitting your onboarding form. Here are the details you provided:\n\n${emailContent}`
+    };
+
+    mg.messages().send(data, function (error, body) {
+      if (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ message: 'Error sending email', error: error.message });
+      } else {
+        console.log('Email sent successfully. Mailgun response:', body);
+        res.status(200).json({ message: 'Form submitted successfully', savedData });
+      }
+    });
 
   } catch (error) {
     console.error('Error in submit-form route:', error);
