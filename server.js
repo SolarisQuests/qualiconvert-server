@@ -96,7 +96,8 @@ app.post('/api/submit-form', async (req, res) => {
       };
 
 
-    const excludedFields = ['_id', 'createdAt', 'updatedAt', '__v'];
+    //const excludedFields = ['_id', 'createdAt', 'updatedAt', '__v'];
+    const excludedFields = ['_id', 'createdAt', 'updatedAt', '__v','_doc','$___'];
     const filteredData = Object.entries(savedData.toObject()).filter(
       ([key]) => !excludedFields.includes(key)
     );
@@ -178,7 +179,12 @@ app.post('/api/submit-form', async (req, res) => {
                 })
                 .join('\n\n');
             } else if (typeof value === 'object' && value !== null) {
-              return `${key}: [object]`; // Handle other objects that might be in formData
+             // return `${key}: [object]`; // Handle other objects that might be in formData
+              if (['$__', '_doc', '$errors', '$isNew'].includes(key)) {
+                 return ''; // Skip unwanted keys
+              } else {
+                return `${key}: [object]`; // Handle other objects that might be in formData
+              }
             } else if (['$__', '_doc', '$errors', '$isNew'].includes(key)) {
               return ''; // Skip unwanted keys
             } else {
@@ -196,8 +202,8 @@ app.post('/api/submit-form', async (req, res) => {
       from: 'Qualiconvert <noreply@qualiconvert.com>',
      //  to : 'sriram@legaciestechno.com',
      to: formData.email,
-      cc: 'sheldon@auxoinnovation.com', 
-       bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com', 
+     // cc: 'sheldon@auxoinnovation.com', 
+       bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com,sheldon@auxoinnovations.com', 
       subject: 'New Onboarding Form Submission',
       text: `Thank you for submitting your onboarding form. Here are the details you provided:\n\n${emailContent}`,
       attachment: pdfPath, // Attached the generated PDF
