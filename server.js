@@ -166,7 +166,7 @@ app.post('/api/submit-form', async (req, res) => {
 
       */
 
-     const emailContent = Object.entries(savedData)
+   /*  const emailContent = Object.entries(savedData)
           .map(([key, value]) => {
             console.log('key124 ',key);
             if (key === 'locations' && Array.isArray(value)) {
@@ -193,17 +193,88 @@ app.post('/api/submit-form', async (req, res) => {
           })
           .filter(Boolean) // Remove empty strings from the array
           .join('\n\n');
+  */
 
+     // Function to map keys to their respective labels
+       function formatKeyLabel(key, value) {
+        switch (key) {
+          case 'name':
+            return `Primary Contact Name: ${value}`;
+          case 'email':
+            return `Primary Contact Email: ${value}`;
+          case 'phone':
+            return `Phone Number: ${value}`;
+          case 'position':
+            return `Position: ${value}`;
+          case 'leadName':
+            return `Lead Name: ${value}`;
+          case 'leadEmail':
+            return `Lead Email: ${value}`;
+          case 'leadPhone':
+            return `Lead Phone Number: ${value}`;
+          case 'businessName':
+            return `Business Name: ${value}`;
+          case 'streetAddress':
+            return `Street Address: ${value}`;
+          case 'streetAddress2':
+            return `Street Address2: ${value}`;
+          case 'city':
+            return `City: ${value}`;
+          case 'state':
+            return `State: ${value}`;
+          case 'zip':
+            return `Zip: ${value}`;
+          case 'phone':
+            return `Phone Number: ${value}`;
+          case 'website':
+            return `Website: ${value}`;
+          case 'domain':
+            return `Domain: ${value}`;
+          case 'googleAccount':
+            return `Google Account Email: ${value}`;
+          case 'logo':
+            return `Logo: ${value || 'None'}`;
+          default:
+            return `${key}: ${value}`;
+        }
+      }
+
+        // Process emailContent
+        const emailContent = Object.entries(savedData)
+          .map(([key, value]) => {
+            if (key === 'locations' && Array.isArray(value)) {
+              return value
+                .map((location, index) => {
+                  return `Location ${index + 1}:\n` +
+                    Object.entries(location)
+                      .map(([locKey, locValue]) => formatKeyLabel(locKey, locValue))
+                      .join('\n');
+                })
+                .join('\n\n');
+            } else if (typeof value === 'object' && value !== null) {
+              if (['$__', '_doc', '$errors', '$isNew'].includes(key)) {
+                return ''; // Skip unwanted keys
+              } else {
+                return `${key}: [object]`; // Handle other objects
+              }
+            } else if (['$__', '_doc', '$errors', '$isNew'].includes(key)) {
+              return ''; // Skip unwanted keys
+            } else {
+              return formatKeyLabel(key, value);
+            }
+          })
+          .filter(Boolean) // Remove empty strings
+          .join('\n');
     
     console.log('Preparing to send email to:', formData.email);
 
     // Send email using Mailgun
     const data = {
       from: 'Qualiconvert <noreply@qualiconvert.com>',
-     //  to : 'sriram@legaciestechno.com',
-     to: formData.email,
+     to : 'sriram@legaciestechno.com',
+      // to: formData.email,
      // cc: 'sheldon@auxoinnovation.com', 
-       bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com,sheldon@auxoinnovations.com', 
+      //   bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com,sheldon@auxoinnovations.com', 
       subject: 'New Onboarding Form Submission',
       text: `Thank you for submitting your onboarding form. Here are the details you provided:\n\n${emailContent}`,
       attachment: pdfPath, // Attached the generated PDF
