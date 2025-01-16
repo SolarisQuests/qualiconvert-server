@@ -271,10 +271,10 @@ app.post('/api/submit-form', async (req, res) => {
     // Send email using Mailgun
     const data = {
       from: 'Qualiconvert <noreply@qualiconvert.com>',
-     to : 'sriram@legaciestechno.com',
-      // to: formData.email,
+     // to : 'sriram@legaciestechno.com',
+      to: formData.email,
      // cc: 'sheldon@auxoinnovation.com', 
-      //   bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com,sheldon@auxoinnovations.com', 
+        bcc:'noreply@auxoinnovations.com,anthony@auxoinnovations.com,sheldon@auxoinnovations.com', 
       subject: 'New Onboarding Form Submission',
       text: `Thank you for submitting your onboarding form. Here are the details you provided:\n\n${emailContent}`,
       attachment: pdfPath, // Attached the generated PDF
