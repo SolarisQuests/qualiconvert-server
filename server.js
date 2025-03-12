@@ -61,7 +61,7 @@ app.post('/api/submit-form', async (req, res) => {
 
     /* Start PDF geenration code */
      // Generate PDF
-     const pdfPath = './OnBoarding_form.pdf';
+     const pdfPath = '/tmp/OnBoarding_form.pdf';
      const doc = new PDFDocument();
      const pdfStream = fs.createWriteStream(pdfPath);
      doc.pipe(pdfStream);
